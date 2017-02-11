@@ -3,7 +3,7 @@ Load all models here
 */
 var mongoose = require('mongoose');
 var tasks = mongoose.model('tasks');
-
+var schedule = require('node-schedule');
 var methods = {};
 var response = {
 
@@ -106,7 +106,7 @@ methods.addRemainder = function(req, res) {
                 remainder: req.body.date
             })
             .lean()
-            .exec(function(err, user) {
+            .exec(function(err, remainder) {
                 if (err) {
                     console.log("err", err)
                     response.success = false;
@@ -115,6 +115,10 @@ methods.addRemainder = function(req, res) {
                     response.userMessage = 'server slept for a while';
                     return SendResponse(res, 500);
                 } else {
+                    myShedule = new Date(req.body.date)
+                    schedule.scheduleJob(myShedule, function() {
+                        console.log('Here is your remainder.');
+                    });
                     response.success = true;
                     response.code = 200;
                     response.data = null;
@@ -145,7 +149,7 @@ methods.delTask = function(req, res) {
         } else {
             tasks.findOneAndRemove({
                 _id: req.body.taskId
-            }).exec(function(err, user) {
+            }).exec(function(err, task) {
                 if (err) {
                     console.log("err", err)
                     response.success = false;
@@ -187,7 +191,7 @@ methods.completeTask = function(req, res) {
                     completed: true
                 })
                 .lean()
-                .exec(function(err, user) {
+                .exec(function(err, task) {
                     if (err) {
                         console.log("err", err)
                         response.success = false;
@@ -231,7 +235,7 @@ methods.updateTask = function(req, res) {
                     description: req.body.description
                 })
                 .lean()
-                .exec(function(err, user) {
+                .exec(function(err, task) {
                     if (err) {
                         console.log("err", err)
                         response.success = false;
